@@ -1,15 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import locationService from '../services/locationService';
+import settingService from '../services/settingService';
 import { Card, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { User, MapPin, Plus, Save, Trash2 } from 'lucide-react';
+import { User, MapPin, Plus, Save, Trash2, Clock } from 'lucide-react';
 
 export function Settings() {
     const { user } = useAuth();
     const [locations, setLocations] = useState([]);
     const [loadingLocations, setLoadingLocations] = useState(false);
+
+    // System Settings
+    const [editWindowMinutes, setEditWindowMinutes] = useState(120);
+    const [loadingSettings, setLoadingSettings] = useState(false);
 
     // New/Edit Location Form
     const [newLocation, setNewLocation] = useState({ name: '', type: 'warehouse', address: '' });
@@ -29,9 +34,34 @@ export function Settings() {
         }
     };
 
+    const fetchSettings = async () => {
+        if (user.role !== 'admin') return;
+        setLoadingSettings(true);
+        try {
+            const data = await settingService.getSettings(user.token);
+            if (data.editWindowMinutes) setEditWindowMinutes(data.editWindowMinutes);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoadingSettings(false);
+        }
+    };
+
     useEffect(() => {
         fetchLocations();
+        fetchSettings();
     }, [user.token]);
+
+    const handleUpdateSettings = async (e) => {
+        e.preventDefault();
+        try {
+            await settingService.updateSettings(user.token, { editWindowMinutes });
+            alert('Settings updated successfully');
+        } catch (error) {
+            console.error(error);
+            alert('Error updating settings');
+        }
+    };
 
     const handleAddLocation = async (e) => {
         e.preventDefault();
@@ -112,6 +142,49 @@ export function Settings() {
                     </div>
                 </CardContent>
             </Card>
+
+            {/* System Settings (Admin Only) */}
+            {
+                user.role === 'admin' && (
+                    <Card>
+                        <CardContent className="p-6">
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className="p-3 bg-blue-100 rounded-full">
+                                    <Clock className="w-6 h-6 text-blue-600" />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-bold text-gray-900">Approval Configuration</h2>
+                                    <p className="text-sm text-gray-500">Configure rules for sample updates and approvals.</p>
+                                </div>
+                            </div>
+
+                            <form onSubmit={handleUpdateSettings} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Edit Time Window (Minutes)
+                                    </label>
+                                    <p className="text-xs text-gray-500 mb-2">
+                                        Merchandisers can edit/delete samples freely within this time after creation.
+                                        After this window, Admin approval is required.
+                                    </p>
+                                    <div className="flex gap-4">
+                                        <Input
+                                            type="number"
+                                            min="0"
+                                            value={editWindowMinutes}
+                                            onChange={(e) => setEditWindowMinutes(e.target.value)}
+                                            className="max-w-[200px]"
+                                        />
+                                        <Button type="submit" disabled={loadingSettings}>
+                                            {loadingSettings ? 'Saving...' : 'Save Configuration'}
+                                        </Button>
+                                    </div>
+                                </div>
+                            </form>
+                        </CardContent>
+                    </Card>
+                )
+            }
 
             {/* Location Management */}
             <Card>
@@ -222,6 +295,6 @@ export function Settings() {
                     </div>
                 </CardContent>
             </Card>
-        </div>
+        </div >
     );
 }

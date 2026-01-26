@@ -14,13 +14,17 @@ userSchema.methods.matchPassword = async function(enteredPassword) {
 };
 
 // Handle password hashing before save
-// Handle password hashing before save
-userSchema.pre('save', async function() {
+userSchema.pre('save', async function(next) {
   if (!this.isModified('passwordHash')) {
-    return;
+    return next();
   }
-  const salt = await bcrypt.genSalt(10);
-  this.passwordHash = await bcrypt.hash(this.passwordHash, salt);
+  try {
+    const salt = await bcrypt.genSalt(10);
+    this.passwordHash = await bcrypt.hash(this.passwordHash, salt);
+    next();
+  } catch (error) {
+    next(error);
+  }
 });
 
 const User = mongoose.model('User', userSchema);

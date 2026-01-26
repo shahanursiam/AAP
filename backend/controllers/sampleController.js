@@ -163,6 +163,10 @@ const getSampleByBarcode = asyncHandler(async (req, res) => {
 // @route   PUT /api/samples/:id
 // @access  Private
 const updateSample = asyncHandler(async (req, res) => {
+    // Top imports needed: SystemSetting, ApprovalRequest
+    const SystemSetting = require('../models/SystemSetting');
+    const ApprovalRequest = require('../models/ApprovalRequest');
+
     const { 
         name, styleNo, poNumber, itemNumber, size, color, 
         buyer, season, supplier, vendor, factory, 
@@ -176,6 +180,31 @@ const updateSample = asyncHandler(async (req, res) => {
             res.status(403);
             throw new Error('Not authorized to update samples');
         }
+
+        // --- APPROVAL LOGIC START ---
+        if (req.user.role === 'merchandiser') {
+             // 1. Get Limit
+             const setting = await SystemSetting.findOne({ key: 'editWindowMinutes' });
+             const limitMinutes = setting ? Number(setting.value) : 120; // Default 120 mins
+
+             // 2. Check Age
+             const createdTime = new Date(sample.createdAt).getTime();
+             const currentTime = Date.now();
+             const diffMinutes = (currentTime - createdTime) / (1000 * 60);
+
+             if (diffMinutes > limitMinutes) {
+                 // 3. Create Request
+                 await ApprovalRequest.create({
+                     merchandiser: req.user._id,
+                     sample: sample._id,
+                     action: 'UPDATE',
+                     data: req.body,
+                     status: 'PENDING'
+                 });
+                 return res.status(202).json({ message: 'Sample is older than edit window. Request sent to Admin for approval.' });
+             }
+        }
+        // --- APPROVAL LOGIC END ---
 
         sample.name = name || sample.name;
         sample.styleNo = styleNo || sample.styleNo;
@@ -221,6 +250,10 @@ const updateSample = asyncHandler(async (req, res) => {
 // @route   DELETE /api/samples/:id
 // @access  Private
 const deleteSample = asyncHandler(async (req, res) => {
+    // Top imports needed: SystemSetting, ApprovalRequest
+    const SystemSetting = require('../models/SystemSetting');
+    const ApprovalRequest = require('../models/ApprovalRequest');
+
     const sample = await Sample.findById(req.params.id);
 
     if (sample) {
@@ -228,6 +261,32 @@ const deleteSample = asyncHandler(async (req, res) => {
             res.status(403);
             throw new Error('Not authorized to delete samples');
         }
+
+         // --- APPROVAL LOGIC START ---
+         if (req.user.role === 'merchandiser') {
+            // 1. Get Limit
+            const setting = await SystemSetting.findOne({ key: 'editWindowMinutes' });
+            const limitMinutes = setting ? Number(setting.value) : 120; // Default 120 mins
+
+            // 2. Check Age
+            const createdTime = new Date(sample.createdAt).getTime();
+            const currentTime = Date.now();
+            const diffMinutes = (currentTime - createdTime) / (1000 * 60);
+
+            if (diffMinutes > limitMinutes) {
+                // 3. Create Request
+                await ApprovalRequest.create({
+                    merchandiser: req.user._id,
+                    sample: sample._id,
+                    action: 'DELETE',
+                    data: {},
+                    status: 'PENDING'
+                });
+                return res.status(202).json({ message: 'Sample is older than edit window. Request sent to Admin for approval.' });
+            }
+       }
+       // --- APPROVAL LOGIC END ---
+
         await Sample.deleteOne({ _id: sample._id });
         res.json({ message: 'Sample removed' });
     } else {

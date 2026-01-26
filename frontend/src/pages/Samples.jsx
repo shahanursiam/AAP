@@ -87,12 +87,26 @@ export function Samples() {
     const handleCreateSubmit = async (e) => {
         e.preventDefault();
         try {
+            let response;
             if (isEditMode && selectedSampleId) {
-                await sampleService.updateSample(user.token, selectedSampleId, formData);
+                response = await sampleService.updateSample(user.token, selectedSampleId, formData);
             } else {
-                await sampleService.createSample(user.token, formData);
+                response = await sampleService.createSample(user.token, formData);
             }
-            setIsCreateModalOpen(false);
+
+            if (response.status === 202 || response?.message?.includes('approval')) {
+                alert(response.message || 'Request sent to Admin for approval.');
+            } else {
+                setIsCreateModalOpen(false);
+                setFormData({
+                    name: '', styleNo: '', size: '', color: '', buyer: '',
+                    season: '', vendor: '', sampleType: 'proto', quantity: 1,
+                    poNumber: '', itemNumber: '', supplier: '', sampleDate: '', fabricDetails: '', remarks: '', currentLocation_id: ''
+                });
+                setIsEditMode(false);
+                setSelectedSampleId(null);
+                fetchSamples(); // Refresh list
+            }
             setFormData({
                 name: '', styleNo: '', size: '', color: '', buyer: '',
                 season: '', vendor: '', sampleType: 'proto', quantity: 1,
@@ -102,6 +116,15 @@ export function Samples() {
             setSelectedSampleId(null);
             fetchSamples(); // Refresh list
         } catch (error) {
+            // Handle Approval 202 (though axios treats 2xx as success, sometimes custom logic needed if using interceptors, but standard axios throws error only on 4xx/5xx)
+            // Actually, axios returns response for 202. We need to check it in the try block if we were using it differently.
+            // But since sampleService returns response.data generally, let's fix sampleService first or check here.
+            // Wait, sampleService usually returns data. Let's update it to return full response or check data message?
+            // Actually, if backend returns 202 with JSON, axios resolves.
+            // So if we are here, it is an error (4xx/5xx).
+            // Let's modify the try block logic if needed. 
+            // Better approach: Check if result has message "Request sent..."
+
             const message = error.response?.data?.message || 'Error saving sample';
             alert(message);
         }
@@ -151,8 +174,12 @@ export function Samples() {
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this sample?')) {
             try {
-                await sampleService.deleteSample(user.token, id);
-                fetchSamples();
+                const response = await sampleService.deleteSample(user.token, id);
+                if (response.status === 202 || response?.message?.includes('approval')) {
+                    alert(response.message || 'Request sent to Admin for approval.');
+                } else {
+                    fetchSamples();
+                }
             } catch (error) {
                 const message = error.response?.data?.message || 'Error deleting sample';
                 alert(message);

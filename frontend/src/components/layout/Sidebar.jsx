@@ -11,7 +11,8 @@ import {
     LogOut,
     ScanBarcode,
     FileText,
-    Briefcase
+    Briefcase,
+    ShieldCheck
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -24,6 +25,7 @@ const menuItems = [
     { icon: ArrowRightLeft, label: 'Movements', path: '/movements' },
     { icon: FileText, label: 'Invoices', path: '/invoices' },
     { icon: BarChart3, label: 'Reports', path: '/reports' },
+    { icon: ShieldCheck, label: 'Approvals', path: '/approvals' },
     { icon: Settings, label: 'Settings', path: '/settings' },
 ];
 
@@ -68,6 +70,9 @@ export function Sidebar({ isOpen, onClose }) {
                     {menuItems.filter(item => {
                         // Only show 'Merchandiser' link to Admin
                         if (item.label === 'Merchandiser' && user?.role !== 'admin') {
+                            return false;
+                        }
+                        if (item.label === 'Approvals' && user?.role !== 'admin') {
                             return false;
                         }
                         return true;

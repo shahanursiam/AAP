@@ -22,6 +22,7 @@ import { InvoiceList } from './pages/InvoiceList';
 import { CreateInvoice } from './pages/CreateInvoice';
 import { InvoiceDetails } from './pages/InvoiceDetails';
 import { MerchandiserDashboard } from './pages/MerchandiserDashboard';
+import { ApprovalDashboard } from './pages/ApprovalDashboard';
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/samples" element={<Samples />} />
             <Route path="/merchandiser" element={<MerchandiserDashboard />} />
+            <Route path="/approvals" element={<ApprovalDashboard />} />
             <Route path="/scan" element={<Scan />} />
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/movements" element={<Movements />} />

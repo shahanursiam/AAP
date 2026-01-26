@@ -11,6 +11,8 @@ const movementRoutes = require('./routes/movementRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const inventoryRoutes = require('./routes/inventoryRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
+const approvalRoutes = require('./routes/approvalRoutes');
+const settingRoutes = require('./routes/settingRoutes');
 
 // Load env vars
 dotenv.config();
@@ -34,6 +36,8 @@ app.use('/api/movements', movementRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/invoices', invoiceRoutes);
+app.use('/api/approvals', approvalRoutes);
+app.use('/api/settings', settingRoutes);
 
 app.get('/', (req, res) => {
   res.send('API is running...');

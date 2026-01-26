@@ -53,6 +53,7 @@ export function InvoiceList() {
                             <tr>
                                 <th className="px-6 py-3">Invoice No</th>
                                 <th className="px-6 py-3">Date</th>
+                                <th className="px-6 py-3">Status</th>
                                 <th className="px-6 py-3">To Location</th>
                                 <th className="px-6 py-3">Items</th>
                                 <th className="px-6 py-3">Created By</th>
@@ -61,9 +62,9 @@ export function InvoiceList() {
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                             {loading ? (
-                                <tr><td colSpan="6" className="px-6 py-8 text-center text-gray-400">Loading invoices...</td></tr>
+                                <tr><td colSpan="7" className="px-6 py-8 text-center text-gray-400">Loading invoices...</td></tr>
                             ) : invoices.length === 0 ? (
-                                <tr><td colSpan="6" className="px-6 py-8 text-center text-gray-400">No invoices found.</td></tr>
+                                <tr><td colSpan="7" className="px-6 py-8 text-center text-gray-400">No invoices found.</td></tr>
                             ) : (
                                 invoices.map((inv) => (
                                     <tr key={inv._id} className="hover:bg-gray-50/50">
@@ -74,7 +75,15 @@ export function InvoiceList() {
                                                 {new Date(inv.issueDate).toLocaleDateString()}
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 font-medium text-gray-900">{inv.toLocation?.name || 'Unknown'}</td>
+                                        <td className="px-6 py-4">
+                                            <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${inv.status === 'Approved' ? 'bg-green-100 text-green-700' :
+                                                    inv.status === 'Rejected' ? 'bg-red-100 text-red-700' :
+                                                        'bg-yellow-100 text-yellow-800'
+                                                }`}>
+                                                {inv.status}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 font-medium text-gray-900">{inv.toLocation?.name || inv.recipientName || 'Unknown'}</td>
                                         <td className="px-6 py-4">
                                             <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-md text-xs font-bold">
                                                 {inv.totalQuantity} items

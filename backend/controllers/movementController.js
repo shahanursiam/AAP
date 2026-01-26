@@ -73,13 +73,28 @@ const getHistory = asyncHandler(async (req, res) => {
 // @desc    Get all movements
 // @route   GET /api/movements
 // @access  Private
+// @desc    Get all movements
+// @route   GET /api/movements
+// @access  Private
 const getMovements = asyncHandler(async (req, res) => {
     const pageSize = 20;
     const page = Number(req.query.pageNumber) || 1;
 
-    const count = await MovementLog.countDocuments({});
+    let query = {};
 
-    const logs = await MovementLog.find({})
+    // Restriction: User can only see movements for samples THEY created.
+    if (req.user.role !== 'admin') {
+        // 1. Find all samples created by this user
+        const userSamples = await Sample.find({ createdBy: req.user._id }).select('_id');
+        const userSampleIds = userSamples.map(s => s._id);
+        
+        // 2. Filter logs for these samples
+        query.sample_id = { $in: userSampleIds };
+    }
+
+    const count = await MovementLog.countDocuments(query);
+
+    const logs = await MovementLog.find(query)
         .populate('sample_id', 'name sku styleNo')
         .populate('fromLocation_id', 'name')
         .populate('toLocation_id', 'name')

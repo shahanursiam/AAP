@@ -18,6 +18,8 @@ export function CreateInvoice() {
     // Setup
     const [locations, setLocations] = useState([]);
     const [toLocation, setToLocation] = useState('');
+    const [sourceLocation, setSourceLocation] = useState(''); // New
+    const [recipientName, setRecipientName] = useState(''); // New
     const [remarks, setRemarks] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -41,10 +43,11 @@ export function CreateInvoice() {
     // Search Samples
     useEffect(() => {
         const delaySearch = setTimeout(async () => {
-            if (searchTerm.length > 2) {
+            if (searchTerm.length > 2 && sourceLocation) {
                 setIsSearching(true);
                 try {
-                    const data = await sampleService.getSamples(user.token, 1, searchTerm);
+                    // Pass sourceLocation to filter
+                    const data = await sampleService.getSamples(user.token, 1, searchTerm, sourceLocation);
                     setSearchResults(data.samples);
                 } catch (e) { console.error(e); }
                 setIsSearching(false);
@@ -53,7 +56,7 @@ export function CreateInvoice() {
             }
         }, 300);
         return () => clearTimeout(delaySearch);
-    }, [searchTerm, user.token]);
+    }, [searchTerm, sourceLocation, user.token]);
 
     const handleAddItem = (sample) => {
         // Check if already added
@@ -111,15 +114,15 @@ export function CreateInvoice() {
     };
 
     const handleSubmit = async () => {
-        if (!toLocation) return alert('Select a destination location');
-        if (items.length === 0) return alert('Add at least one item');
-
+        if (!recipientName) return alert('Enter a destination');
+        if (!sourceLocation) return alert('Select Source Location');
         if (items.length === 0) return alert('Add at least one item');
 
         setLoading(true);
         try {
             const invoice = await invoiceService.createInvoice(user.token, {
-                toLocationId: toLocation,
+                recipientName,
+                sourceLocationId: sourceLocation,
                 remarks,
                 items: items.map(i => ({
                     sampleId: i.sampleId,
@@ -127,6 +130,7 @@ export function CreateInvoice() {
                     notes: i.notes
                 }))
             });
+            alert('Invoice Request Created! Pending Approval.');
             navigate(`/invoices/${invoice._id}`); // Go to details view
         } catch (error) {
             alert(error.response?.data?.message || 'Error creating invoice');
@@ -146,20 +150,39 @@ export function CreateInvoice() {
                 <div className="space-y-6">
                     <Card>
                         <CardContent className="p-6 space-y-4">
-                            <h2 className="font-bold text-gray-900">1. Destination</h2>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">To Location</label>
+                            <h2 className="font-bold text-gray-900">1. Details</h2>
+
+                            {/* Source Location */}
+                            <div className="bg-yellow-50 p-3 rounded-md border border-yellow-200">
+                                <label className="block text-sm font-bold text-yellow-800 mb-1">From (Source) Location</label>
                                 <select
-                                    className="w-full border-gray-300 rounded-md shadow-sm p-2 bg-white"
-                                    value={toLocation}
-                                    onChange={(e) => setToLocation(e.target.value)}
+                                    className="w-full border-yellow-300 rounded-md shadow-sm p-2 bg-white text-sm"
+                                    value={sourceLocation}
+                                    onChange={(e) => {
+                                        setSourceLocation(e.target.value);
+                                        setItems([]); // Clear items if source changes
+                                    }}
                                 >
-                                    <option value="">Select Location...</option>
+                                    <option value="">Select Source...</option>
                                     {locations.map(loc => (
                                         <option key={loc._id} value={loc._id}>{loc.name} ({loc.type})</option>
                                     ))}
                                 </select>
+                                <p className="text-xs text-yellow-700 mt-1">This will filter samples available in this location.</p>
                             </div>
+
+                            <hr className="border-gray-100" />
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Destination</label>
+                                <Input
+                                    value={recipientName}
+                                    onChange={(e) => setRecipientName(e.target.value)}
+                                    placeholder="Enter Client Name or Destination Address"
+                                    required
+                                />
+                            </div>
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
                                 <Input value={remarks} onChange={(e) => setRemarks(e.target.value)} placeholder="e.g. Weekly Restock" />
@@ -171,38 +194,47 @@ export function CreateInvoice() {
                         <CardContent className="p-6 space-y-4">
                             <div className="flex justify-between items-center">
                                 <h2 className="font-bold text-gray-900">2. Add Items</h2>
-                                <Button size="sm" variant="outline" onClick={() => setIsScannerOpen(true)}>
+                                <Button size="sm" variant="outline" onClick={() => setIsScannerOpen(true)} disabled={!sourceLocation}>
                                     <Scan className="w-4 h-4 mr-1" /> Scan
                                 </Button>
                             </div>
-                            <div className="relative">
-                                <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                                <Input
-                                    placeholder="Search by Name or SKU..."
-                                    className="pl-10"
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                />
-                            </div>
-                            {/* Search Results */}
-                            {searchTerm.length > 2 && (
-                                <div className="border rounded-md divide-y max-h-60 overflow-y-auto bg-gray-50">
-                                    {isSearching && <div className="p-2 text-center text-xs text-gray-500">Searching...</div>}
-                                    {!isSearching && searchResults.length === 0 && <div className="p-2 text-center text-xs text-gray-500">No results</div>}
-                                    {searchResults.map(sample => (
-                                        <div
-                                            key={sample._id}
-                                            className="p-2 hover:bg-indigo-50 cursor-pointer flex justify-between items-center"
-                                            onClick={() => handleAddItem(sample)}
-                                        >
-                                            <div className="text-sm">
-                                                <div className="font-medium">{sample.name}</div>
-                                                <div className="text-xs text-gray-500">{sample.sku} | Qty: {sample.quantity}</div>
-                                            </div>
-                                            <Plus className="w-4 h-4 text-indigo-600" />
-                                        </div>
-                                    ))}
+
+                            {!sourceLocation ? (
+                                <div className="text-center p-4 bg-gray-50 text-gray-400 text-sm rounded-md">
+                                    Select Source Location First
                                 </div>
+                            ) : (
+                                <>
+                                    <div className="relative">
+                                        <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                                        <Input
+                                            placeholder="Search by Name or SKU..."
+                                            className="pl-10"
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                        />
+                                    </div>
+                                    {/* Search Results */}
+                                    {searchTerm.length > 2 && (
+                                        <div className="border rounded-md divide-y max-h-60 overflow-y-auto bg-gray-50">
+                                            {isSearching && <div className="p-2 text-center text-xs text-gray-500">Searching...</div>}
+                                            {!isSearching && searchResults.length === 0 && <div className="p-2 text-center text-xs text-gray-500">No results found in this location</div>}
+                                            {searchResults.map(sample => (
+                                                <div
+                                                    key={sample._id}
+                                                    className="p-2 hover:bg-indigo-50 cursor-pointer flex justify-between items-center"
+                                                    onClick={() => handleAddItem(sample)}
+                                                >
+                                                    <div className="text-sm">
+                                                        <div className="font-medium">{sample.name}</div>
+                                                        <div className="text-xs text-gray-500">{sample.sku} | Qty: {sample.quantity}</div>
+                                                    </div>
+                                                    <Plus className="w-4 h-4 text-indigo-600" />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </>
                             )}
                         </CardContent>
                     </Card>
@@ -214,7 +246,7 @@ export function CreateInvoice() {
                         <CardContent className="p-0 flex flex-col h-full">
                             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                                 <h2 className="font-bold text-gray-900">3. Invoice Items ({items.length})</h2>
-                                <Button onClick={handleSubmit} disabled={loading || items.length === 0 || !toLocation}>
+                                <Button onClick={handleSubmit} disabled={loading || items.length === 0 || !recipientName}>
                                     {loading ? 'Processing...' : 'Generate Invoice'} <ArrowRight className="w-4 h-4 ml-2" />
                                 </Button>
                             </div>

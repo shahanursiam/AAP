@@ -10,9 +10,11 @@ const getConfig = (token) => {
     };
 };
 
-const getSamples = async (token, page = 1, keyword = '') => {
+const getSamples = async (token, page = 1, keyword = '', locationId = '') => {
     const config = getConfig(token);
-    const response = await axios.get(`${API_URL}?pageNumber=${page}&keyword=${keyword}`, config);
+    let url = `${API_URL}?pageNumber=${page}&keyword=${keyword}`;
+    if (locationId) url += `&locationId=${locationId}`;
+    const response = await axios.get(url, config);
     return response.data;
 };
 
@@ -68,13 +70,13 @@ const getSampleHistory = async (token, id) => {
     return response.data;
 };
 
-const distributeSample = async (token, id, locationId, notes, quantity) => {
+const distributeSample = async (token, id, locationId, notes, quantity, hanger, carton) => {
     const config = {
         headers: {
             Authorization: `Bearer ${token}`,
         },
     };
-    const response = await axios.put(`${API_URL}/${id}/distribute`, { locationId, notes, quantity }, config);
+    const response = await axios.put(`${API_URL}/${id}/distribute`, { locationId, notes, quantity, hanger, carton }, config);
     return response.data;
 };
 

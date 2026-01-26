@@ -32,10 +32,21 @@ const createInvoice = async (token, invoiceData) => {
     return response.data;
 };
 
+const approveInvoice = async (token, id) => {
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    };
+    const response = await axios.put(`${API_URL}/${id}/approve`, {}, config);
+    return response.data;
+};
+
 const invoiceService = {
     getInvoices,
     getInvoiceById,
-    createInvoice
+    createInvoice,
+    approveInvoice
 };
 
 export default invoiceService;

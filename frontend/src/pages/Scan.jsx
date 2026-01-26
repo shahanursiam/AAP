@@ -350,6 +350,23 @@ export function Scan() {
                                             <p className="font-medium text-indigo-600">{scannedSample.currentLocation_id.name}</p>
                                         </div>
                                     )}
+
+                                    {/* Stock Breakdown */}
+                                    {scannedSample.stockBreakdown && scannedSample.stockBreakdown.length > 0 && (
+                                        <div className="col-span-2 mt-4 pt-4 border-t border-dashed">
+                                            <div className="flex justify-between items-center mb-2">
+                                                <h4 className="font-bold text-gray-700 text-sm">Global Stock: {scannedSample.totalGlobalStock}</h4>
+                                            </div>
+                                            <div className="bg-gray-50 rounded-md p-2 space-y-1">
+                                                {scannedSample.stockBreakdown.map(stock => (
+                                                    <div key={stock._id} className="flex justify-between text-xs items-center p-1 border-b border-gray-100 last:border-0">
+                                                        <span className="font-medium text-gray-600">{stock.locationName}</span>
+                                                        <span className="font-bold bg-white px-2 py-0.5 rounded border shadow-sm">{stock.quantity}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="p-4 bg-gray-50 border-t flex flex-wrap justify-end gap-2">
                                     <Button variant="ghost" size="sm" onClick={handleDistribute} title="Distribute" className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50">

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const sampleSchema = mongoose.Schema({
-  sku: { type: String, required: true, unique: true },
+  sku: { type: String, required: true },
   styleNo: { type: String },
   poNumber: { type: String },
   itemNumber: { type: String },

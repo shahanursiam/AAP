@@ -109,6 +109,11 @@ const getSamples = asyncHandler(async (req, res) => {
         keyword.createdBy = req.user._id;
     }
 
+    // Filter by Location
+    if (req.query.locationId) {
+        keyword.currentLocation_id = req.query.locationId;
+    }
+
     const count = await Sample.countDocuments({ ...keyword });
     const samples = await Sample.find({ ...keyword })
         .populate('currentLocation_id', 'name')
@@ -141,18 +146,38 @@ const getSampleById = asyncHandler(async (req, res) => {
 // @access  Private
 const getSampleByBarcode = asyncHandler(async (req, res) => {
     const { barcode } = req.params;
-    
-    // Check if barcode is in barcodes array or is the sku
-    // Using FindOne so we get just the first match
-    const sample = await Sample.findOne({
+
+    // Find ALL matches for this SKU/Barcode
+    const samples = await Sample.find({
         $or: [
             { sku: barcode },
-            { barcodes: barcode }
+            { barcodes: barcode },
+            { itemNumber: barcode }
         ]
     }).populate('currentLocation_id');
 
-    if (sample) {
-        res.json(sample);
+    if (samples && samples.length > 0) {
+        // Use the first one as primary for static details (Style, Name, etc.)
+        const primarySample = samples[0];
+
+        // Aggregate Stock
+        const totalGlobalStock = samples.reduce((acc, s) => acc + (s.quantity || 0), 0);
+        
+        const stockBreakdown = samples.map(s => ({
+            _id: s._id,
+            locationName: s.currentLocation_id ? s.currentLocation_id.name : 'Unknown',
+            locationType: s.currentLocation_id ? s.currentLocation_id.type : '-',
+            quantity: s.quantity
+        }));
+
+        // Return hybrid object
+        const responseData = {
+            ...primarySample.toObject(),
+            totalGlobalStock,
+            stockBreakdown
+        };
+
+        res.json(responseData);
     } else {
         res.status(404);
         throw new Error('Sample not found');
@@ -299,9 +324,30 @@ const deleteSample = asyncHandler(async (req, res) => {
 // @route   GET /api/samples/:id/history
 // @access  Private
 const getSampleHistory = asyncHandler(async (req, res) => {
-    const logs = await MovementLog.find({ sample_id: req.params.id })
+    // 1. Check Sample Access
+    const sample = await Sample.findById(req.params.id);
+    if (!sample) {
+        res.status(404);
+        throw new Error('Sample not found');
+    }
+
+    if (req.user.role === 'merchandiser' && sample.createdBy.toString() !== req.user._id.toString()) {
+        res.status(403);
+        throw new Error('Not authorized to view history of this sample');
+    }
+
+    // 2. Build Query
+    let query = { sample_id: req.params.id };
+
+    // "User can see only his movements"
+    if (req.user.role !== 'admin') {
+        query.performedBy = req.user._id;
+    }
+
+    const logs = await MovementLog.find(query)
         .populate('performedBy', 'name email')
         .sort({ timestamp: -1 });
+
     res.json(logs);
 });
 

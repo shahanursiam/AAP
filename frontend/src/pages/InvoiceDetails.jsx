@@ -42,9 +42,23 @@ export function InvoiceDetails() {
                         <ArrowLeft className="w-4 h-4 mr-2" /> Back to Invoices
                     </Button>
                 </Link>
-                <Button onClick={handlePrint}>
-                    <Printer className="w-4 h-4 mr-2" /> Print Challan
-                </Button>
+                <div className="flex gap-2">
+                    {invoice.status === 'Pending' && user.role === 'admin' && (
+                        <Button className="bg-green-600 hover:bg-green-700" onClick={async () => {
+                            if (window.confirm('Approve Invoice? This will deduct stock.')) {
+                                try {
+                                    await invoiceService.approveInvoice(user.token, invoice._id);
+                                    window.location.reload();
+                                } catch (e) { alert(e.response?.data?.message || 'Error approving'); }
+                            }
+                        }}>
+                            Approve & Deduct Stock
+                        </Button>
+                    )}
+                    <Button onClick={handlePrint}>
+                        <Printer className="w-4 h-4 mr-2" /> Print Challan
+                    </Button>
+                </div>
             </div>
 
             {/* Print Area */}
@@ -57,23 +71,30 @@ export function InvoiceDetails() {
                             <p className="text-gray-500 mt-1">Sample Management System</p>
                             <div className="mt-4 text-sm text-gray-600">
                                 <p className="font-bold">From:</p>
-                                <p>Head Office / Central Store</p>
-                                <p>123 Corporate Blvd, City</p>
+                                <p>{invoice.sourceLocation?.name || 'Head Office'}</p>
+                                <p>{invoice.sourceLocation?.address}</p>
                             </div>
                         </div>
                         <div className="text-right">
                             <h2 className="text-xl font-bold text-gray-900 uppercase tracking-widest">Delivery Challan</h2>
                             <p className="text-indigo-600 font-mono font-bold text-lg mt-2">{invoice.invoiceNo}</p>
                             <p className="text-gray-500 text-sm mt-1">Date: {new Date(invoice.issueDate).toLocaleDateString()}</p>
+                            <div className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase mt-2 ${invoice.status === 'Approved' ? 'bg-green-100 text-green-700' :
+                                invoice.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100'
+                                }`}>
+                                {invoice.status}
+                            </div>
                         </div>
                     </div>
 
                     {/* Recipient */}
                     <div className="mb-8 p-4 bg-gray-50 rounded-lg print:bg-transparent print:p-0">
                         <p className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-2">Ship To:</p>
-                        <h3 className="text-xl font-bold text-gray-900">{invoice.toLocation.name}</h3>
-                        <p className="text-gray-600">{invoice.toLocation.address || 'No Address Provided'}</p>
-                        <p className="text-gray-400 text-sm mt-1">{invoice.toLocation.type}</p>
+                        <h3 className="text-xl font-bold text-gray-900">{invoice.recipientName || invoice.toLocation?.name || 'External'}</h3>
+                        {invoice.toLocation && (
+                            <p className="text-gray-600">{invoice.toLocation.address}</p>
+                        )}
+                        <p className="text-gray-400 text-sm mt-1">{invoice.toLocation?.type || 'Direct Delivery'}</p>
                     </div>
 
                     {/* Table */}

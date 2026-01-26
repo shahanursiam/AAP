@@ -80,6 +80,16 @@ const distributeSample = async (token, id, locationId, notes, quantity, hanger, 
     return response.data;
 };
 
+const returnSample = async (token, id, locationId, notes, quantity, hanger, carton, invoiceNo) => {
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    };
+    const response = await axios.put(`${API_URL}/${id}/return`, { locationId, notes, quantity, hanger, carton, invoiceNo }, config);
+    return response.data;
+};
+
 const sampleService = {
     getSamples,
     createSample,
@@ -88,7 +98,9 @@ const sampleService = {
     updateSample,
     deleteSample,
     getSampleHistory,
-    distributeSample
+    getSampleHistory,
+    distributeSample,
+    returnSample
 };
 
 export default sampleService;

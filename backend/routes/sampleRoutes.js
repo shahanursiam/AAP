@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
 console.log('Sample Routes Loaded');
-const { createSample, getSamples, getSampleById, getSampleByBarcode, updateSample, deleteSample, getSampleHistory, distributeSample } = require('../controllers/sampleController');
-console.log('Distribute Controller Type:', typeof distributeSample);
+const { createSample, getSamples, getSampleById, getSampleByBarcode, updateSample, deleteSample, getSampleHistory, distributeSample, returnSample } = require('../controllers/sampleController');
 const { protect } = require('../middleware/authMiddleware');
 
 router.route('/')
@@ -14,6 +13,9 @@ router.route('/lookup/:barcode')
 
 router.route('/:id/history')
     .get(protect, getSampleHistory);
+
+router.route('/:id/return')
+    .put(protect, returnSample);
 
 router.route('/:id/distribute')
     .put(protect, distributeSample);

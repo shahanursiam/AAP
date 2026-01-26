@@ -7,7 +7,7 @@ import { Input } from '../components/ui/Input';
 import { Card, CardContent } from '../components/ui/Card';
 import { Plus, Search, FileText, QrCode, Scan, X, Edit, Printer, Trash2, Copy, Share2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BarcodeScanner } from '../components/common/BarcodeScanner';
+
 import { PrintLabel } from '../components/common/PrintLabel';
 
 export function Samples() {
@@ -18,7 +18,7 @@ export function Samples() {
     const [totalPages, setTotalPages] = useState(1);
     const [keyword, setKeyword] = useState('');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-    const [isScannerOpen, setIsScannerOpen] = useState(false);
+
     const [isEditMode, setIsEditMode] = useState(false);
     const [selectedSampleId, setSelectedSampleId] = useState(null);
 
@@ -130,10 +130,7 @@ export function Samples() {
         }
     };
 
-    const handleScanSuccess = (decodedText) => {
-        setFormData(prev => ({ ...prev, itemNumber: decodedText }));
-        setIsScannerOpen(false);
-    };
+
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -373,15 +370,7 @@ export function Samples() {
                 </div>
             </div>
 
-            {/* Scanner Modal */}
-            <AnimatePresence>
-                {isScannerOpen && (
-                    <BarcodeScanner
-                        onScanSuccess={handleScanSuccess}
-                        onClose={() => setIsScannerOpen(false)}
-                    />
-                )}
-            </AnimatePresence>
+
 
             {/* Create Modal */}
             <AnimatePresence>
@@ -406,15 +395,7 @@ export function Samples() {
                             </div>
                             <form onSubmit={handleCreateSubmit} className="p-6 space-y-4">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="md:col-span-2">
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Item No (Barcode) *</label>
-                                        <div className="flex gap-2">
-                                            <Input name="itemNumber" value={formData.itemNumber} onChange={handleChange} required />
-                                            <Button type="button" variant="outline" size="icon" onClick={() => setIsScannerOpen(true)} title="Scan Barcode">
-                                                <Scan className="w-4 h-4" />
-                                            </Button>
-                                        </div>
-                                    </div>
+
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Sample Description *</label>
                                         <Input name="name" value={formData.name} onChange={handleChange} required />

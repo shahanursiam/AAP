@@ -20,6 +20,7 @@ export function CreateInvoice() {
     const [toLocation, setToLocation] = useState('');
     const [sourceLocation, setSourceLocation] = useState(''); // New
     const [recipientName, setRecipientName] = useState(''); // New
+    const [invoiceType, setInvoiceType] = useState('Non-returnable');
     const [remarks, setRemarks] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -124,6 +125,7 @@ export function CreateInvoice() {
                 recipientName,
                 sourceLocationId: sourceLocation,
                 remarks,
+                invoiceType,
                 items: items.map(i => ({
                     sampleId: i.sampleId,
                     quantity: i.quantity,
@@ -181,6 +183,18 @@ export function CreateInvoice() {
                                     placeholder="Enter Client Name or Destination Address"
                                     required
                                 />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Invoice Type</label>
+                                <select
+                                    className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    value={invoiceType}
+                                    onChange={(e) => setInvoiceType(e.target.value)}
+                                >
+                                    <option value="Non-returnable">Non-returnable Sample</option>
+                                    <option value="Returnable">Returnable Sample</option>
+                                </select>
                             </div>
 
                             <div>

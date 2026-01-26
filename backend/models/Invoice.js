@@ -14,7 +14,8 @@ const invoiceSchema = mongoose.Schema({
     status: { type: String, enum: ['Pending', 'Approved', 'Rejected', 'Sent', 'Cancelled'], default: 'Pending' },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     issueDate: { type: Date, default: Date.now },
-    remarks: String
+    remarks: String,
+    invoiceType: { type: String, enum: ['Returnable', 'Non-returnable'], default: 'Non-returnable' }
 }, { timestamps: true });
 
 // Generate Invoice No pre-save if not exists

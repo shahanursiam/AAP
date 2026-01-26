@@ -1,0 +1,17 @@
+--- Starting Invoice Return Validation Test ---
+Login OK
+Using Location: Front Desk
+Created Sample: SMP-260127-2287
+Created Invoice: INV-2601-0007
+Testing Invalid Invoice Return...
+PASS: Invalid Invoice rejected correctly (404)
+Testing Valid Invoice Return...
+FAIL: Valid Invoice Return failed: 404
+Error: SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at parseJSONFromBytes (node:internal/deps/undici/undici:5738:19)
+    at successSteps (node:internal/deps/undici/undici:5719:27)
+    at fullyReadBody (node:internal/deps/undici/undici:4609:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async consumeBody (node:internal/deps/undici/undici:5728:7)
+    at async runTest (C:\Users\shaha\Desktop\AAP\backend\test_invoice_return.js:120:25)

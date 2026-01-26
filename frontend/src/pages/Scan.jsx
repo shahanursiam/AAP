@@ -5,7 +5,7 @@ import locationService from '../services/locationService';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardContent } from '../components/ui/Card';
-import { Scan as ScanIcon, Search, Package, Calendar, User, AlertCircle, Edit, Copy, Printer, Trash2, History, X, Clock, Share2 } from 'lucide-react';
+import { Scan as ScanIcon, Search, Package, Calendar, User, AlertCircle, Edit, Copy, Printer, Trash2, History, X, Clock, Share2, ArrowRightLeft } from 'lucide-react';
 import { BarcodeScanner } from '../components/common/BarcodeScanner';
 import { PrintLabel } from '../components/common/PrintLabel';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -47,6 +47,16 @@ export function Scan() {
         carton: ''
     });
     const [distributeLoading, setDistributeLoading] = useState(false);
+
+    // Return State
+    const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
+    const [returnData, setReturnData] = useState({
+        locationId: '',
+        notes: '',
+        quantity: 1,
+        invoiceNo: ''
+    });
+    const [returnLoading, setReturnLoading] = useState(false);
 
 
     // Auto-focus input on mount
@@ -232,6 +242,50 @@ export function Scan() {
         }
     };
 
+    const handleReturn = async () => {
+        if (!scannedSample) return;
+        setReturnData({
+            locationId: '',
+            notes: '',
+            quantity: 1,
+            invoiceNo: ''
+        });
+        setIsReturnModalOpen(true);
+        try {
+            const locs = await locationService.getLocations(user.token);
+            setLocations(locs);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleReturnSubmit = async (e) => {
+        e.preventDefault();
+        setReturnLoading(true);
+        try {
+            await sampleService.returnSample(
+                user.token,
+                scannedSample._id,
+                returnData.locationId,
+                returnData.notes,
+                returnData.quantity,
+                returnData.hanger,
+                returnData.carton,
+                returnData.invoiceNo
+            );
+            alert('Sample returned successfully');
+            setIsReturnModalOpen(false);
+            // Refresh scanned data
+            const updated = await sampleService.getSampleById(user.token, scannedSample._id);
+            setScannedSample(updated);
+        } catch (error) {
+            const message = error.response?.data?.message || 'Error returning sample';
+            alert(message);
+        } finally {
+            setReturnLoading(false);
+        }
+    };
+
 
     // --- Modal Handlers ---
 
@@ -369,6 +423,9 @@ export function Scan() {
                                     )}
                                 </div>
                                 <div className="p-4 bg-gray-50 border-t flex flex-wrap justify-end gap-2">
+                                    <Button variant="ghost" size="sm" onClick={handleReturn} title="Return" className="text-orange-600 hover:text-orange-700 hover:bg-orange-50">
+                                        <ArrowRightLeft className="w-4 h-4 mr-1" /> Return
+                                    </Button>
                                     <Button variant="ghost" size="sm" onClick={handleDistribute} title="Distribute" className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50">
                                         <Share2 className="w-4 h-4 mr-1" /> Distribute
                                     </Button>
@@ -680,6 +737,115 @@ export function Scan() {
                                     <Button type="button" variant="secondary" onClick={() => setIsDistributeModalOpen(false)}>Cancel</Button>
                                     <Button type="submit" disabled={distributeLoading}>
                                         {distributeLoading ? 'Distributing...' : 'Confirm Distribution'}
+                                    </Button>
+                                </div>
+                            </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Return Modal */}
+            <AnimatePresence>
+                {isReturnModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 bg-black/50"
+                            onClick={() => setIsReturnModalOpen(false)}
+                        />
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            className="bg-white rounded-xl shadow-xl w-full max-w-md z-10 overflow-hidden"
+                        >
+                            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-white z-10">
+                                <h2 className="text-lg font-bold text-gray-900">Return Sample</h2>
+                                <button onClick={() => setIsReturnModalOpen(false)} className="text-gray-400 hover:text-gray-600">✕</button>
+                            </div>
+                            <form onSubmit={handleReturnSubmit} className="p-6 space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Return To Location</label>
+                                    <select
+                                        className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        required
+                                        value={returnData.locationId}
+                                        onChange={(e) => setReturnData({ ...returnData, locationId: e.target.value })}
+                                    >
+                                        <option value="">Select Location...</option>
+                                        {locations.map(loc => (
+                                            <option key={loc._id} value={loc._id}>{loc.name} ({loc.type})</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Dynamic Fields for Return */}
+                                {(() => {
+                                    const selectedLoc = locations.find(l => l._id === returnData.locationId);
+                                    if (!selectedLoc) return null;
+                                    const name = selectedLoc.name.toLowerCase();
+
+                                    if (name.includes('store room')) {
+                                        return (
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Carton No.</label>
+                                                <Input
+                                                    placeholder="e.g. C-202"
+                                                    value={returnData.carton}
+                                                    onChange={(e) => setReturnData({ ...returnData, carton: e.target.value })}
+                                                />
+                                            </div>
+                                        );
+                                    }
+                                    if (name.includes('display room') || name.includes('general room')) {
+                                        return (
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Hanger No.</label>
+                                                <Input
+                                                    placeholder="e.g. H-101"
+                                                    value={returnData.hanger}
+                                                    onChange={(e) => setReturnData({ ...returnData, hanger: e.target.value })}
+                                                />
+                                            </div>
+                                        );
+                                    }
+                                    return null;
+                                })()}
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                                    <Input
+                                        type="number"
+                                        min="1"
+                                        value={returnData.quantity}
+                                        onChange={(e) => setReturnData({ ...returnData, quantity: e.target.value })}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                                    <Input
+                                        value={returnData.notes}
+                                        onChange={(e) => setReturnData({ ...returnData, notes: e.target.value })}
+                                        placeholder="Reason for return..."
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Invoice No <span className="text-red-500">*</span></label>
+                                    <Input
+                                        required
+                                        value={returnData.invoiceNo}
+                                        onChange={(e) => setReturnData({ ...returnData, invoiceNo: e.target.value })}
+                                        placeholder="Enter Returnable Invoice No"
+                                    />
+                                </div>
+                                <div className="pt-4 flex justify-end gap-3 sticky bottom-0 bg-white border-t border-gray-100">
+                                    <Button type="button" variant="secondary" onClick={() => setIsReturnModalOpen(false)}>Cancel</Button>
+                                    <Button type="submit" disabled={returnLoading}>
+                                        {returnLoading ? 'Processing...' : 'Confirm Return'}
                                     </Button>
                                 </div>
                             </form>

@@ -20,7 +20,7 @@ export const PrintLabel = React.forwardRef(({ sample }, ref) => {
 
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '4px', width: '100%', flex: '0 0 auto' }}>
                 <img
-                    src={`https://bwipjs-api.metafloor.com/?bcid=code128&text=${sample.itemNumber}&scale=3&height=8&includetext`}
+                    src={`https://bwipjs-api.metafloor.com/?bcid=code128&text=${sample.sku}&scale=3&height=8&includetext`}
                     alt="Barcode"
                     style={{ maxWidth: '90%', height: 'auto' }}
                 />

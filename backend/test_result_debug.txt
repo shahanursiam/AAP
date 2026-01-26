@@ -1,0 +1,7 @@
+--- Starting Invoice Return Validation Test ---
+Login OK
+Using Location: Front Desk
+Created Sample: SMP-260127-5256
+Created Invoice: INV-2601-0013
+FAIL: Invalid Invoice should fail, got: 500
+PASS: Valid Invoice Return successful.

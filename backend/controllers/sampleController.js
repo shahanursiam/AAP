@@ -470,4 +470,110 @@ const distributeSample = asyncHandler(async (req, res) => {
     }
 });
 
-module.exports = { createSample, getSamples, getSampleById, getSampleByBarcode, updateSample, deleteSample, getSampleHistory, distributeSample };
+// @desc    Return sample (Add Stock)
+// @route   PUT /api/samples/:id/return
+// @access  Private
+const returnSample = asyncHandler(async (req, res) => {
+    // Top imports needed: Location, Invoice
+    const Location = require('../models/Location');
+    const Invoice = require('../models/Invoice');
+
+    const { locationId, notes, quantity, hanger, carton, invoiceNo } = req.body; 
+
+    if (!locationId) {
+        res.status(400);
+        throw new Error('Location is required');
+    }
+
+    try {
+        const sourceSample = await Sample.findById(req.params.id);
+
+        if (!sourceSample) {
+            res.status(404);
+            throw new Error('Sample record not found');
+        }
+
+        let logComments = `Returned/Added to Stock (Hanger: ${hanger || '-'}, Carton: ${carton || '-'}) - ${notes || ''}`;
+
+        // STRICT Validation: Invoice No matches returnable invoice for the SKU
+        if (!invoiceNo) {
+             res.status(400);
+             throw new Error('Invoice Number is required for returns');
+        }
+
+        const invoice = await Invoice.findOne({ invoiceNo });
+        if (!invoice) {
+            res.status(404);
+            throw new Error(`Invoice ${invoiceNo} not found`);
+        }
+
+        if (invoice.invoiceType !== 'Returnable') {
+            res.status(400);
+            throw new Error(`Invoice ${invoiceNo} is Non-returnable. Cannot process return.`);
+        }
+
+        // Check if item exists in invoice (Reference Check)
+        const isItemInInvoice = invoice.items.some(item => item.sample.toString() === sourceSample._id.toString());
+        
+        if (!isItemInInvoice) {
+             res.status(400);
+             throw new Error(`Item ${sourceSample.sku} is not part of Invoice ${invoiceNo}`);
+        }
+
+        logComments += ` | Returned from Invoice: ${invoiceNo}`;
+
+        const qtyToReturn = quantity ? Number(quantity) : 1;
+        
+        // Find Destination Sample (Same SKU + Location + Hanger/Carton)
+        let destSample = await Sample.findOne({
+            sku: sourceSample.sku,
+            currentLocation_id: locationId,
+            hanger: hanger || null,
+            carton: carton || null
+        });
+
+        if (destSample) {
+            // Increment
+            destSample.quantity += qtyToReturn;
+            await destSample.save();
+        } else {
+             // Create New Record at Destination
+             const newSampleData = sourceSample.toObject();
+             delete newSampleData._id;
+             delete newSampleData.createdAt;
+             delete newSampleData.updatedAt;
+             delete newSampleData.__v;
+             
+             destSample = new Sample({
+                 ...newSampleData,
+                 quantity: qtyToReturn,
+                 currentLocation_id: locationId,
+                 hanger: hanger || null,
+                 carton: carton || null,
+                 createdBy: req.user._id
+             });
+             await destSample.save();
+        }
+
+        // Log Movement
+        await MovementLog.create({
+            sample_id: sourceSample._id, // Link to original scan for reference
+            sample_id: destSample._id, // Actually link to the destination one (the active one)
+            action: 'RETURN',
+            toLocation_id: locationId,
+            fromLocation_id: null, // External
+            performedBy: req.user._id,
+            quantity: qtyToReturn,
+            comments: logComments
+        });
+
+        res.json(destSample);
+
+    } catch (error) {
+        console.error('Return Error:', error);
+        res.status(500);
+        throw new Error(error.message);
+    }
+});
+
+module.exports = { createSample, getSamples, getSampleById, getSampleByBarcode, updateSample, deleteSample, getSampleHistory, distributeSample, returnSample };

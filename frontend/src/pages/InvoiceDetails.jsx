@@ -79,6 +79,7 @@ export function InvoiceDetails() {
                             <h2 className="text-xl font-bold text-gray-900 uppercase tracking-widest">Delivery Challan</h2>
                             <p className="text-indigo-600 font-mono font-bold text-lg mt-2">{invoice.invoiceNo}</p>
                             <p className="text-gray-500 text-sm mt-1">Date: {new Date(invoice.issueDate).toLocaleDateString()}</p>
+                            <p className="text-gray-500 text-sm mt-1 font-medium">Type: {invoice.invoiceType || 'Non-returnable'}</p>
                             <div className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase mt-2 ${invoice.status === 'Approved' ? 'bg-green-100 text-green-700' :
                                 invoice.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100'
                                 }`}>

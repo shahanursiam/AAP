@@ -8,7 +8,7 @@ const asyncHandler = require('express-async-handler');
 // @access  Private
 const createInvoice = asyncHandler(async (req, res) => {
     try {
-        const { toLocationId, recipientName, sourceLocationId, items, remarks } = req.body;
+        const { toLocationId, recipientName, sourceLocationId, items, remarks, invoiceType } = req.body;
 
         if (!items || items.length === 0) {
             res.status(400);
@@ -45,7 +45,8 @@ const createInvoice = asyncHandler(async (req, res) => {
             totalQuantity,
             status: 'Pending',
             createdBy: req.user._id,
-            remarks
+            remarks,
+            invoiceType: invoiceType || 'Non-returnable'
         });
 
         const createdInvoice = await invoice.save();

@@ -1,0 +1,13 @@
+--- Starting Return Sample Test ---
+Login OK
+Using Location: Front Desk 6974e1b39cff9b5e3007798c
+Created Sample ID: 6977be4d60b5ce309f8df982 Initial Qty: 10
+Performing Return (adding +5)...
+Error: SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at parseJSONFromBytes (node:internal/deps/undici/undici:5738:19)
+    at successSteps (node:internal/deps/undici/undici:5719:27)
+    at fullyReadBody (node:internal/deps/undici/undici:4609:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async consumeBody (node:internal/deps/undici/undici:5728:7)
+    at async runTest (C:\Users\shaha\Desktop\AAP\backend\test_return_sample.js:69:25)

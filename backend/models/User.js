@@ -16,10 +16,11 @@ userSchema.methods.matchPassword = async function(enteredPassword) {
 // Handle password hashing before save
 userSchema.pre('save', async function(next) {
   if (!this.isModified('passwordHash')) {
-    next();
+    return next();
   }
   const salt = await bcrypt.genSalt(10);
   this.passwordHash = await bcrypt.hash(this.passwordHash, salt);
+  next();
 });
 
 const User = mongoose.model('User', userSchema);

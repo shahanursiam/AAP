@@ -4,8 +4,11 @@ import { Sidebar } from './Sidebar';
 import { Menu, Bell, Search, User } from 'lucide-react';
 import { Button } from '../ui/Button';
 
+import { useAuth } from '../../context/AuthContext';
+
 export function MainLayout() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const { user } = useAuth();
 
     return (
         <div className="min-h-screen bg-gray-50/50 flex">
@@ -44,11 +47,11 @@ export function MainLayout() {
                         </button>
                         <div className="flex items-center pl-2 sm:pl-4 border-l border-gray-200">
                             <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-medium text-sm">
-                                JD
+                                {user?.name?.charAt(0).toUpperCase()}
                             </div>
                             <div className="hidden sm:block ml-3">
-                                <p className="text-sm font-medium text-gray-700">John Doe</p>
-                                <p className="text-xs text-gray-500">Merchandiser</p>
+                                <p className="text-sm font-medium text-gray-700">{user?.name}</p>
+                                <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
                             </div>
                         </div>
                     </div>

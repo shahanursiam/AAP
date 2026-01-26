@@ -272,6 +272,7 @@ export function Samples() {
                                 <th className="px-6 py-3">SKU / Style</th>
                                 <th className="px-6 py-3">Details</th>
                                 <th className="px-6 py-3">Buyer</th>
+                                {user.role === 'admin' && <th className="px-6 py-3">Created By</th>}
                                 <th className="px-6 py-3">Status</th>
                                 <th className="px-6 py-3 text-right">Actions</th>
                             </tr>
@@ -298,6 +299,13 @@ export function Samples() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-gray-600">{sample.buyer}</td>
+                                        {user.role === 'admin' && (
+                                            <td className="px-6 py-4 text-gray-600 text-sm">
+                                                <span className="bg-gray-100 px-2 py-1 rounded-md">
+                                                    {sample.createdBy?.name || 'Unknown'}
+                                                </span>
+                                            </td>
+                                        )}
                                         <td className="px-6 py-4">
                                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
                                                 {sample.status}

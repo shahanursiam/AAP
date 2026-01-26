@@ -104,9 +104,15 @@ const getSamples = asyncHandler(async (req, res) => {
         ]
     } : {};
 
+    // Filter for Merchandiser (only their own samples)
+    if (req.user.role === 'merchandiser') {
+        keyword.createdBy = req.user._id;
+    }
+
     const count = await Sample.countDocuments({ ...keyword });
     const samples = await Sample.find({ ...keyword })
         .populate('currentLocation_id', 'name')
+        .populate('createdBy', 'name')
         .limit(pageSize)
         .skip(pageSize * (page - 1))
         .sort({ createdAt: -1 });

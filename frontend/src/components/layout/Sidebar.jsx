@@ -30,7 +30,8 @@ const menuItems = [
 export function Sidebar({ isOpen, onClose }) {
     const location = useLocation();
     const navigate = useNavigate();
-    const { logout } = useAuth();
+    const { logout, user } = useAuth(); // Get user
+
 
     const handleLogout = () => {
         logout();
@@ -64,7 +65,13 @@ export function Sidebar({ isOpen, onClose }) {
 
                 {/* Navigation */}
                 <nav className="p-4 space-y-1 overflow-y-auto h-[calc(100vh-4rem)] scrollbar-hide">
-                    {menuItems.map((item) => {
+                    {menuItems.filter(item => {
+                        // Only show 'Merchandiser' link to Admin
+                        if (item.label === 'Merchandiser' && user?.role !== 'admin') {
+                            return false;
+                        }
+                        return true;
+                    }).map((item) => {
                         const Icon = item.icon;
                         const isActive = location.pathname.startsWith(item.path);
 

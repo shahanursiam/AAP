@@ -21,7 +21,7 @@ export function MerchandiserDashboard() {
                 const config = {
                     headers: { Authorization: `Bearer ${user.token}` },
                 };
-                const { data } = await axios.get('http://localhost:5000/api/reports/stats', config);
+                const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/reports/stats`, config);
                 setStats(data);
             } catch (error) {
                 console.error("Error fetching stats", error);

@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
                     'Content-Type': 'application/json',
                 },
             };
-            const { data } = await axios.post('http://localhost:5000/api/auth/login', { email, password }, config);
+            const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/login`, { email, password }, config);
             localStorage.setItem('userInfo', JSON.stringify(data));
             setUser(data);
             return { success: true };

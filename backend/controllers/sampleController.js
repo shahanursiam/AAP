@@ -309,7 +309,10 @@ const getSampleHistory = asyncHandler(async (req, res) => {
 // @route   PUT /api/samples/:id/distribute
 // @access  Private
 const distributeSample = asyncHandler(async (req, res) => {
-    const { locationId, notes, quantity, hanger, carton } = req.body; // Added hanger/carton
+    // Top imports needed: Location
+    const Location = require('../models/Location');
+
+    const { locationId, notes, quantity, hanger, carton } = req.body; 
 
     if (!locationId) {
         res.status(400);
@@ -323,6 +326,43 @@ const distributeSample = asyncHandler(async (req, res) => {
             res.status(404);
             throw new Error('Sample not found');
         }
+
+        // --- VALIDATION LOGIC START ---
+        const location = await Location.findById(locationId);
+        if (!location) {
+             res.status(404);
+             throw new Error('Destination location not found in DB');
+        }
+
+        const locName = location.name.toLowerCase();
+        
+        // 1. Allowed Locations Check
+        const allowedLocations = ['front desk', 'store room', 'display room', 'general room'];
+        const isAllowed = allowedLocations.some(allowed => locName.includes(allowed));
+        
+        if (!isAllowed) {
+             // Optional: Strict check per user request "Movement only to..."
+             // If existing locations don't match exactly, this might break things. 
+             // Let's assume user will create locations with these names.
+             // For safety, warn but maybe dont block if it's a legacy location? 
+             // Request said "Movement ONLY to...". So we block.
+             res.status(400);
+             throw new Error('Invalid location. Allowed: Front Desk, Store Room, Display Room, General Room');
+        }
+
+        // 2. Field Requirements
+        if (locName.includes('store room')) {
+            if (!carton) {
+                res.status(400);
+                throw new Error('Carton Number is required for Store Room');
+            }
+        } else if (locName.includes('display room') || locName.includes('general room')) {
+            if (!hanger) {
+                res.status(400);
+                throw new Error('Hanger Number is required for this room');
+            }
+        }
+        // --- VALIDATION LOGIC END ---
 
         const qtyToMove = quantity ? Number(quantity) : sourceSample.quantity; // Default to all if not specified
         

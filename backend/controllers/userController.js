@@ -13,9 +13,17 @@ const getMerchandisers = asyncHandler(async (req, res) => {
     // 2. Aggregate sample counts for each user
     const merchandisers = await Promise.all(users.map(async (user) => {
         const count = await Sample.countDocuments({ createdBy: user._id });
+        
+        const qtyAgg = await Sample.aggregate([
+            { $match: { createdBy: user._id } },
+            { $group: { _id: null, totalQty: { $sum: "$quantity" } } }
+        ]);
+        const totalQty = qtyAgg.length > 0 ? qtyAgg[0].totalQty : 0;
+
         return {
             ...user.toObject(),
-            sampleCount: count
+            sampleCount: count,
+            totalQuantity: totalQty
         };
     }));
 

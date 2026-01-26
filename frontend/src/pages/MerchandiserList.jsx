@@ -117,9 +117,15 @@ export function MerchandiserList() {
                                     <Mail className="w-3 h-3" /> {merc.email}
                                 </div>
 
-                                <div className="pt-4 border-t border-gray-100 flex justify-between items-center">
-                                    <div className="text-sm text-gray-500">Total Samples</div>
-                                    <div className="text-lg font-bold text-indigo-600">{merc.sampleCount || 0}</div>
+                                <div className="pt-4 border-t border-gray-100 grid grid-cols-2 gap-4">
+                                    <div className="text-center">
+                                        <div className="text-xs text-gray-500 uppercase tracking-wide">Total Items</div>
+                                        <div className="text-lg font-bold text-gray-900">{merc.sampleCount || 0}</div>
+                                    </div>
+                                    <div className="text-center border-l border-gray-100">
+                                        <div className="text-xs text-gray-500 uppercase tracking-wide">Total Samples</div>
+                                        <div className="text-lg font-bold text-indigo-600">{merc.totalQuantity || 0}</div>
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>

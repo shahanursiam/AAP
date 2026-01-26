@@ -590,12 +590,56 @@ export function Scan() {
                                         onChange={(e) => setDistributionData({ ...distributionData, locationId: e.target.value })}
                                     >
                                         <option value="">Select Location...</option>
-                                        {locations.map(loc => (
-                                            <option key={loc._id} value={loc._id}>{loc.name} ({loc.type})</option>
-                                        ))}
+                                        {locations
+                                            .filter(loc => {
+                                                const name = loc.name.toLowerCase();
+                                                return name.includes('front desk') ||
+                                                    name.includes('store room') ||
+                                                    name.includes('display room') ||
+                                                    name.includes('general room');
+                                            })
+                                            .map(loc => (
+                                                <option key={loc._id} value={loc._id}>{loc.name} ({loc.type})</option>
+                                            ))}
                                     </select>
                                     {locations.length === 0 && <p className="text-xs text-red-500 mt-1">No locations found. Contact Admin.</p>}
                                 </div>
+
+                                {/* Dynamic Fields */}
+                                {(() => {
+                                    const selectedLoc = locations.find(l => l._id === distributionData.locationId);
+                                    if (!selectedLoc) return null;
+                                    const name = selectedLoc.name.toLowerCase();
+
+                                    if (name.includes('store room')) {
+                                        return (
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Carton No. *</label>
+                                                <Input
+                                                    required
+                                                    placeholder="e.g. C-202"
+                                                    value={distributionData.carton}
+                                                    onChange={(e) => setDistributionData({ ...distributionData, carton: e.target.value })}
+                                                />
+                                            </div>
+                                        );
+                                    }
+                                    if (name.includes('display room') || name.includes('general room')) {
+                                        return (
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Hanger No. *</label>
+                                                <Input
+                                                    required
+                                                    placeholder="e.g. H-101"
+                                                    value={distributionData.hanger}
+                                                    onChange={(e) => setDistributionData({ ...distributionData, hanger: e.target.value })}
+                                                />
+                                            </div>
+                                        );
+                                    }
+                                    return null;
+                                })()}
+
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
                                     <Input
@@ -606,24 +650,7 @@ export function Scan() {
                                         onChange={(e) => setDistributionData({ ...distributionData, quantity: e.target.value })}
                                     />
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Hanger No.</label>
-                                        <Input
-                                            placeholder="e.g. H-101"
-                                            value={distributionData.hanger}
-                                            onChange={(e) => setDistributionData({ ...distributionData, hanger: e.target.value })}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Carton No.</label>
-                                        <Input
-                                            placeholder="e.g. C-202"
-                                            value={distributionData.carton}
-                                            onChange={(e) => setDistributionData({ ...distributionData, carton: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
+
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
                                     <Input

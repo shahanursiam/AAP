@@ -113,6 +113,38 @@ const getSamples = asyncHandler(async (req, res) => {
     if (req.query.locationId) {
         keyword.currentLocation_id = req.query.locationId;
     }
+    // Filter by Location Name (Search)
+    if (req.query.location) {
+        // Need to find location IDs first because Sample stores ObjectId
+        const Location = require('../models/Location');
+        const locs = await Location.find({ name: { $regex: req.query.location, $options: 'i' } });
+        const locIds = locs.map(l => l._id);
+        keyword.currentLocation_id = { $in: locIds };
+    }
+
+    // New Filters for Reports
+    if (req.query.buyer) {
+        keyword.buyer = { $regex: req.query.buyer, $options: 'i' };
+    }
+    if (req.query.factory) {
+        keyword.$or = [
+            { factory: { $regex: req.query.factory, $options: 'i' } },
+            { supplier: { $regex: req.query.factory, $options: 'i' } }
+        ];
+    }
+    if (req.query.startDate || req.query.endDate) {
+        keyword.sampleDate = {};
+        if (req.query.startDate) {
+            keyword.sampleDate.$gte = new Date(req.query.startDate);
+        }
+        if (req.query.endDate) {
+            const end = new Date(req.query.endDate);
+            end.setHours(23, 59, 59, 999); // Set to end of day
+            keyword.sampleDate.$lte = end;
+        }
+    }
+
+
 
     const count = await Sample.countDocuments({ ...keyword });
     const samples = await Sample.find({ ...keyword })

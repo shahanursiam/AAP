@@ -1,0 +1,41 @@
+Starting verification...
+MongoDB Connected
+Total Samples: 14
+Available Factories (distinct): []
+Available Buyers (distinct): ["Academy Grand Pass","Drake","MO Fishing"]
+--- FIRST SAMPLE DUMP ---
+{
+  "_id": "69783b7022ab3278343b35b5",
+  "sku": "SMP-260127-3296",
+  "styleNo": "170990",
+  "poNumber": "12189246",
+  "itemNumber": "",
+  "name": "MAG T HUNTGEAR GRAND PASS OVERALL",
+  "size": "3T",
+  "color": "REAL TREE APX",
+  "buyer": "Academy Grand Pass",
+  "season": "Fall-26",
+  "supplier": "TexPro",
+  "vendor": "AAP",
+  "sampleDate": "2026-01-27T04:13:36.060Z",
+  "fabricDetails": "7 OZ 60% CTN 40% POLY CVC DUCK",
+  "remarks": "",
+  "sampleType": "pp",
+  "barcodes": [
+    "SMP-260127-3296-1",
+    "SMP-260127-3296-2",
+    "SMP-260127-3296-3",
+    "SMP-260127-3296-4",
+    "SMP-260127-3296-5",
+    "SMP-260127-3296-6",
+    "SMP-260127-3296-7",
+    "SMP-260127-3296-8"
+  ],
+  "quantity": 3,
+  "currentLocation_id": "6974e1b39cff9b5e3007798c",
+  "status": "Created",
+  "createdBy": "697786188b226e3e7f863699",
+  "createdAt": "2026-01-27T04:13:36.062Z",
+  "updatedAt": "2026-01-27T07:59:30.246Z",
+  "__v": 0
+}

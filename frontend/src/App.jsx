@@ -23,6 +23,8 @@ import { CreateInvoice } from './pages/CreateInvoice';
 import { InvoiceDetails } from './pages/InvoiceDetails';
 import { MerchandiserDashboard } from './pages/MerchandiserDashboard';
 import { ApprovalDashboard } from './pages/ApprovalDashboard';
+import { TrackingManager } from './pages/TrackingManager';
+import { Reports } from './pages/Reports';
 
 function App() {
   return (
@@ -45,6 +47,9 @@ function App() {
             <Route path="/invoices" element={<InvoiceList />} />
             <Route path="/invoices/new" element={<CreateInvoice />} />
             <Route path="/invoices/:id" element={<InvoiceDetails />} />
+            <Route path="/invoices/:id" element={<InvoiceDetails />} />
+            <Route path="/tracking" element={<TrackingManager />} />
+            <Route path="/reports" element={<Reports />} />
             <Route path="*" element={<div className="p-8 text-center text-gray-500">Page not found or under construction</div>} />
           </Route>
         </Routes>

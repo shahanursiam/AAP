@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import { Shirt, Truck, CheckCircle2, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export function Dashboard() {
     const { user } = useAuth();
@@ -30,10 +31,8 @@ export function Dashboard() {
     }, [user.token]);
 
     const statCards = [
-        { title: 'Total Samples', value: stats?.totalSamples, icon: Shirt, color: 'text-blue-600', bg: 'bg-blue-50' },
-        { title: 'In Transit', value: stats?.inTransit, icon: Truck, color: 'text-amber-600', bg: 'bg-amber-50' },
-        { title: 'Delivered', value: stats?.delivered, icon: CheckCircle2, color: 'text-green-600', bg: 'bg-green-50' },
-        { title: 'Delayed / Stuck', value: stats?.delayed, icon: AlertCircle, color: 'text-red-600', bg: 'bg-red-50' },
+        { title: 'Total Samples', value: stats?.totalSamplesCount, icon: Shirt, color: 'text-blue-600', bg: 'bg-blue-50' },
+        { title: 'Total QTY', value: stats?.totalQuantity, icon: Truck, color: 'text-indigo-600', bg: 'bg-indigo-50' },
     ];
 
     const container = {
@@ -100,11 +99,53 @@ export function Dashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <Card className="lg:col-span-2 min-h-[400px]">
                     <CardHeader>
-                        <CardTitle>Movement Activity</CardTitle>
+                        <CardTitle>Inventory Breakdown</CardTitle>
                     </CardHeader>
-                    <CardContent>
-                        <div className="h-80 flex items-center justify-center text-gray-400 border-2 border-dashed border-gray-100 rounded-xl bg-gray-50/50">
-                            Chart Component Placeholder (Need Chart.js or Recharts)
+                    <CardContent className="space-y-8">
+                        {/* Factory / Supplier Chart */}
+                        <div>
+                            <h4 className="text-sm font-semibold text-gray-500 mb-4">Top Factories / Suppliers</h4>
+                            <div className="h-64 w-full">
+                                {stats?.factoryCounts?.length > 0 ? (
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={stats.factoryCounts} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
+                                            <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
+                                            <XAxis type="number" />
+                                            <YAxis type="category" dataKey="_id" width={100} tick={{ fontSize: 12 }} />
+                                            <Tooltip
+                                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                                cursor={{ fill: '#f3f4f6' }}
+                                            />
+                                            <Bar dataKey="count" name="Quantity" fill="#6366f1" radius={[0, 4, 4, 0]} barSize={20} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                ) : (
+                                    <div className="h-full flex items-center justify-center text-gray-400 text-sm">No factory data</div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Customer / Buyer Chart */}
+                        <div>
+                            <h4 className="text-sm font-semibold text-gray-500 mb-4">Top Customers</h4>
+                            <div className="h-64 w-full">
+                                {stats?.buyerCounts?.length > 0 ? (
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={stats.buyerCounts} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
+                                            <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
+                                            <XAxis type="number" />
+                                            <YAxis type="category" dataKey="_id" width={100} tick={{ fontSize: 12 }} />
+                                            <Tooltip
+                                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                                cursor={{ fill: '#f3f4f6' }}
+                                            />
+                                            <Bar dataKey="count" name="Quantity" fill="#0ea5e9" radius={[0, 4, 4, 0]} barSize={20} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                ) : (
+                                    <div className="h-full flex items-center justify-center text-gray-400 text-sm">No customer data</div>
+                                )}
+                            </div>
                         </div>
                     </CardContent>
                 </Card>

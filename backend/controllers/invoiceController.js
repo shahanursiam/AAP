@@ -6,6 +6,9 @@ const asyncHandler = require('express-async-handler');
 // @desc    Create new invoice (Request)
 // @route   POST /api/invoices
 // @access  Private
+// @desc    Create new invoice (Request) & Deduct Stock
+// @route   POST /api/invoices
+// @access  Private
 const createInvoice = asyncHandler(async (req, res) => {
     try {
         const { toLocationId, recipientName, sourceLocationId, items, remarks, invoiceType } = req.body;
@@ -18,7 +21,7 @@ const createInvoice = asyncHandler(async (req, res) => {
         // Calculate total quantity
         const totalQuantity = items.reduce((acc, item) => acc + (Number(item.quantity) || 0), 0);
 
-        // Validation: Check stock
+        // Validation & Deduction Loop
         for (const item of items) {
              const sample = await Sample.findById(item.sampleId);
              if (!sample) {
@@ -34,6 +37,10 @@ const createInvoice = asyncHandler(async (req, res) => {
                  res.status(400);
                  throw new Error(`Sample ${sample.name} is not at the selected source location`);
              }
+
+             // *** DEDUCT STOCK HERE ***
+             sample.quantity -= item.quantity;
+             await sample.save();
         }
 
         // Create Invoice (Pending)
@@ -58,11 +65,11 @@ const createInvoice = asyncHandler(async (req, res) => {
     }
 });
 
-// @desc    Approve Invoice (Deduct Stock)
+// @desc    Approve Invoice (Status Update Only)
 // @route   PUT /api/invoices/:id/approve
 // @access  Private (Admin)
 const approveInvoice = asyncHandler(async (req, res) => {
-    const invoice = await Invoice.findById(req.params.id);
+    const invoice = await Invoice.findById(req.params.id).populate('items.sample');
 
     if (!invoice) {
         res.status(404);
@@ -79,24 +86,15 @@ const approveInvoice = asyncHandler(async (req, res) => {
         throw new Error('Invoice already approved');
     }
 
-    // Deduct Stock Now
+    // Stock already deducted at creation. Just Log Movement.
     for (const item of invoice.items) {
-        const sample = await Sample.findById(item.sample);
-        if (sample) {
-            if (sample.quantity < item.quantity) {
-                 res.status(400);
-                 throw new Error(`Insufficient stock for ${sample.name}. Cannot approve.`);
-            }
-
-            sample.quantity = sample.quantity - item.quantity;
-            await sample.save();
-
-            // Log Movement
-            await MovementLog.create({
-                sample_id: sample._id,
-                action: 'INVOICE_SENT', 
+        if (item.sample) { 
+            // Only log if sample still exists (it should)
+             await MovementLog.create({
+                sample_id: item.sample._id,
+                action: 'INVOICE_APPROVED', 
                 toLocation_id: invoice.toLocation || null, 
-                fromLocation_id: sample.currentLocation_id,
+                fromLocation_id: item.sample.currentLocation_id, // Might not be fully accurate if moved since, but acceptable for now
                 performedBy: req.user._id,
                 quantity: item.quantity,
                 comments: `Invoice #${invoice.invoiceNo} Approved. Sent to: ${invoice.recipientName || 'External'}`
@@ -140,7 +138,7 @@ const getInvoiceById = asyncHandler(async (req, res) => {
     const invoice = await Invoice.findById(req.params.id)
         .populate('toLocation', 'name address')
         .populate('createdBy', 'name email')
-        .populate('items.sample', 'name sku styleNo size color');
+        .populate('items.sample', 'name sku styleNo size color buyer');
 
     if (invoice) {
         // Access Check

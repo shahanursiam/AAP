@@ -8,3 +8,5 @@ createRoot(document.getElementById('root')).render(
     <App />
   </StrictMode>,
 )
+
+// VITE_API_URL=https://aap-backend-zs31.onrender.com

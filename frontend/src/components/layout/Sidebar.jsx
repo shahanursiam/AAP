@@ -12,7 +12,8 @@ import {
     ScanBarcode,
     FileText,
     Briefcase,
-    ShieldCheck
+    ShieldCheck,
+    Package
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -21,6 +22,7 @@ const menuItems = [
     { icon: Briefcase, label: 'Merchandiser', path: '/merchandiser' },
     { icon: Shirt, label: 'Samples', path: '/samples' },
     { icon: ScanBarcode, label: 'Scan', path: '/scan' },
+    { icon: Package, label: 'Tracking', path: '/tracking' }, // New
     { icon: Warehouse, label: 'Inventory', path: '/inventory' },
     { icon: ArrowRightLeft, label: 'Movements', path: '/movements' },
     { icon: FileText, label: 'Invoices', path: '/invoices' },

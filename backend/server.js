@@ -38,6 +38,7 @@ app.use('/api/inventory', inventoryRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/approvals', approvalRoutes);
 app.use('/api/settings', settingRoutes);
+app.use('/api/tracking', require('./routes/trackingRoutes'));
 
 app.get('/', (req, res) => {
   res.send('API is running...');

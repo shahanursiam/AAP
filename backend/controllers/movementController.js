@@ -84,12 +84,20 @@ const getMovements = asyncHandler(async (req, res) => {
 
     // Restriction: User can only see movements for samples THEY created.
     if (req.user.role !== 'admin') {
-        // 1. Find all samples created by this user
         const userSamples = await Sample.find({ createdBy: req.user._id }).select('_id');
         const userSampleIds = userSamples.map(s => s._id);
-        
-        // 2. Filter logs for these samples
         query.sample_id = { $in: userSampleIds };
+    }
+
+    // Date Filters
+    if (req.query.startDate || req.query.endDate) {
+        query.createdAt = {};
+        if (req.query.startDate) query.createdAt.$gte = new Date(req.query.startDate);
+        if (req.query.endDate) {
+            const end = new Date(req.query.endDate);
+            end.setHours(23, 59, 59, 999);
+            query.createdAt.$lte = end;
+        }
     }
 
     const count = await MovementLog.countDocuments(query);

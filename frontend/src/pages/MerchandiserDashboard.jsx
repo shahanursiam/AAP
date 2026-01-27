@@ -40,10 +40,8 @@ export function MerchandiserDashboard() {
 
     // Merchandiser View: Personal Dashboard
     const statCards = [
-        { title: 'Total Stock Samples', value: stats?.totalSamples, icon: Shirt, color: 'text-blue-600', bg: 'bg-blue-50' },
-        { title: 'In Transit', value: stats?.inTransit, icon: Truck, color: 'text-amber-600', bg: 'bg-amber-50' },
-        { title: 'Delivered', value: stats?.delivered, icon: CheckCircle2, color: 'text-green-600', bg: 'bg-green-50' },
-        { title: 'Delayed / Stuck', value: stats?.delayed, icon: AlertCircle, color: 'text-red-600', bg: 'bg-red-50' },
+        { title: 'Total Samples', value: stats?.totalSamplesCount, icon: Shirt, color: 'text-blue-600', bg: 'bg-blue-50' },
+        { title: 'Total QTY', value: stats?.totalQuantity, icon: Truck, color: 'text-indigo-600', bg: 'bg-indigo-50' },
     ];
 
     const container = {

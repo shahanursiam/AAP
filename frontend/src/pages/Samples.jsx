@@ -253,7 +253,17 @@ export function Samples() {
     const handlePrint = (sample) => {
         setPrintSample(sample);
         setTimeout(() => {
+            document.body.classList.add('label-printing');
+            const cleanup = () => {
+                document.body.classList.remove('label-printing');
+                window.removeEventListener('afterprint', cleanup); // Remove listener after execution
+            };
+            window.addEventListener('afterprint', cleanup);
             window.print();
+            // Fallback for browsers that might not fire afterprint reliably or immediately if user cancels
+            // However, removing it immediately might break preview. 
+            // Better to rely on afterprint or requestAnimationFrame if needed, but afterprint is standard.
+            // Note: In some cases (like older Safari), afterprint might vary, but for modern Chrome/Edge (Windows), it works.
         }, 300);
     };
 

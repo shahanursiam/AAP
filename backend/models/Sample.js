@@ -21,7 +21,8 @@ const sampleSchema = mongoose.Schema({
   barcodes: [{ type: String }], // Multiple barcodes if multiple items for one sample entry
   quantity: { type: Number, default: 1 },
   hanger: { type: String }, // New: Hanger Number (for Display/Merch)
-  carton: { type: String }, // New: Carton Number (for Store)
+  carton: { type: String }, // Old field, keep for backward compat if needed, or deprecate
+  container: { type: mongoose.Schema.Types.ObjectId, ref: 'Container' }, // New: Unified Container Ref
   currentLocation_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Location' },
   status: { type: String, enum: ['Created', 'Received', 'In QC', 'In Transit', 'Delivered', 'Approved', 'Rejected', 'Closed'], default: 'Created' },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

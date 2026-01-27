@@ -1,0 +1,9 @@
+countDocuments (Total Records): 14
+Aggregate Sum Quantity: 53
+Status Breakdown (By Quantity):
+[
+  {
+    "_id": "Created",
+    "count": 53
+  }
+]

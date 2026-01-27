@@ -32,34 +32,107 @@ h1 {
   line-height: 1.1;
 }
 
+@page {
+  size: A4;
+  margin: 0 !important;
+  /* Force hide browser headers/footers */
+}
+
 @media print {
-  @page {
-    size: 2in 3in;
-    margin: 0;
+
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 100%;
+    overflow: visible !important;
   }
 
   body {
-    margin: 0;
-    padding: 0;
+    background-color: white !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
-  body * {
+  /* Main Print Container Wrapper if needed */
+  .print\:w-full {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 20px !important;
+    /* Add padding here instead of body */
+  }
+
+  html {
+    font-size: 11px;
+  }
+
+  /* Force background colors to print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Clean up UI elements */
+  button,
+  svg {
+    display: none !important;
+  }
+
+  /* Table Handling */
+  table {
+    page-break-inside: auto;
+  }
+
+  tr {
+    page-break-inside: avoid !important;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  /* Remove "Card" effects for flat print */
+  .shadow,
+  .shadow-sm,
+  .shadow-md,
+  .shadow-lg {
+    box-shadow: none !important;
+  }
+
+  .rounded,
+  .rounded-lg,
+  .rounded-xl {
+    border-radius: 0 !important;
+  }
+
+  /* Page Break Utility */
+  .break-after-page {
+    page-break-after: always;
+  }
+
+  /* Fix Grid Collapsing if not handled by Tailwind classes */
+  .print\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Specific Sample Label Printing Isolation */
+@media print {
+  body.label-printing * {
     visibility: hidden;
   }
 
-  #print-area,
-  #print-area * {
+  body.label-printing #print-area,
+  body.label-printing #print-area * {
     visibility: visible;
   }
 
-  #print-area {
+  body.label-printing #print-area {
+    display: block !important;
+    /* Override 'hidden' class */
     position: absolute;
     left: 0;
     top: 0;
-    width: 2in;
-    height: 3in;
-    display: flex !important;
-    justify-content: center;
-    align-items: center;
   }
 }

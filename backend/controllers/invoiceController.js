@@ -108,6 +108,51 @@ const approveInvoice = asyncHandler(async (req, res) => {
     res.json(updatedInvoice);
 });
 
+// @desc    Reject Invoice
+// @route   PUT /api/invoices/:id/reject
+// @access  Private (Admin)
+const rejectInvoice = asyncHandler(async (req, res) => {
+    const invoice = await Invoice.findById(req.params.id);
+
+    if (!invoice) {
+        res.status(404);
+        throw new Error('Invoice not found');
+    }
+
+    if (req.user.role !== 'admin') {
+        res.status(403);
+        throw new Error('Not authorized. Admin only.');
+    }
+
+    if (invoice.status !== 'Pending') {
+        res.status(400);
+        throw new Error('Invoice already handled');
+    }
+
+    // Return stock since it was deducted at creation
+    for (const item of invoice.items) {
+        const sample = await Sample.findById(item.sample);
+        if (sample) {
+            sample.quantity += item.quantity;
+            await sample.save();
+
+            // Log movement
+             await MovementLog.create({
+                sample_id: item.sample,
+                action: 'INVOICE_REJECTED', 
+                performedBy: req.user._id,
+                quantity: item.quantity,
+                comments: `Invoice #${invoice.invoiceNo} Rejected. Stock returned.`
+            });
+        }
+    }
+
+    invoice.status = 'Rejected';
+    const updatedInvoice = await invoice.save();
+
+    res.json(updatedInvoice);
+});
+
 // @desc    Get all invoices
 // @route   GET /api/invoices
 // @access  Private
@@ -153,4 +198,4 @@ const getInvoiceById = asyncHandler(async (req, res) => {
     }
 });
 
-module.exports = { createInvoice, getInvoices, getInvoiceById, approveInvoice };
+module.exports = { createInvoice, getInvoices, getInvoiceById, approveInvoice, rejectInvoice };

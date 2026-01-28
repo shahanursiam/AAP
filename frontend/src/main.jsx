@@ -10,3 +10,4 @@ createRoot(document.getElementById('root')).render(
 )
 
 // VITE_API_URL=http://localhost:5000
+// VITE_API_URL=https://aap-backend-zs31.onrender.com

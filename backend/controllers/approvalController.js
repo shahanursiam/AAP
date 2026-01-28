@@ -3,15 +3,44 @@ const Sample = require('../models/Sample');
 const MovementLog = require('../models/MovementLog');
 const asyncHandler = require('express-async-handler');
 
+const Invoice = require('../models/Invoice');
+
 // @desc    Get all pending requests
 // @route   GET /api/approvals
 // @access  Private (Admin)
 const getRequests = asyncHandler(async (req, res) => {
-    const requests = await ApprovalRequest.find({ status: 'PENDING' })
+    // 1. Fetch Sample Approval Requests
+    const approvalRequests = await ApprovalRequest.find({ status: 'PENDING' })
         .populate('merchandiser', 'name email')
         .populate('sample', 'name sku')
         .sort({ createdAt: -1 });
-    res.json(requests);
+
+    // 2. Fetch Pending Invoices
+    const pendingInvoices = await Invoice.find({ status: 'Pending' })
+        .populate('createdBy', 'name email')
+        .populate('toLocation', 'name')
+        .sort({ createdAt: -1 });
+
+    // 3. Format & Combine
+    const formattedApprovals = approvalRequests.map(req => ({
+        ...req.toObject(),
+        type: 'SAMPLE_APPROVAL'
+    }));
+
+    const formattedInvoices = pendingInvoices.map(inv => ({
+        ...inv.toObject(),
+        type: 'INVOICE_APPROVAL',
+        // Map invoice fields to match generic structure purely for sorting if needed, 
+        // or just keep them distinct and handle in frontend.
+        // Let's keep distinct but ensure we can sort.
+        createdAt: inv.createdAt
+    }));
+
+    const allRequests = [...formattedApprovals, ...formattedInvoices].sort((a, b) => 
+        new Date(b.createdAt) - new Date(a.createdAt)
+    );
+
+    res.json(allRequests);
 });
 
 // @desc    Handle request (Approve/Reject)

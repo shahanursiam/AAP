@@ -42,11 +42,22 @@ const approveInvoice = async (token, id) => {
     return response.data;
 };
 
+const rejectInvoice = async (token, id) => {
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    };
+    const response = await axios.put(`${API_URL}/${id}/reject`, {}, config);
+    return response.data;
+};
+
 const invoiceService = {
     getInvoices,
     getInvoiceById,
     createInvoice,
-    approveInvoice
+    approveInvoice,
+    rejectInvoice
 };
 
 export default invoiceService;

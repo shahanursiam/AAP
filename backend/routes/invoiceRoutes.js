@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { createInvoice, getInvoices, getInvoiceById, approveInvoice } = require('../controllers/invoiceController');
+const { createInvoice, getInvoices, getInvoiceById, approveInvoice, rejectInvoice } = require('../controllers/invoiceController');
 const { protect } = require('../middleware/authMiddleware');
 
 router.route('/')
@@ -12,5 +12,8 @@ router.route('/:id')
 
 router.route('/:id/approve')
     .put(protect, approveInvoice);
+
+router.route('/:id/reject')
+    .put(protect, rejectInvoice);
 
 module.exports = router;

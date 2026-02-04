@@ -1,4 +1,4 @@
-﻿# AAP - Apparel & Asset Platform
+﻿# AAP 
 
 **AAP** is a comprehensive Garment Sample & Inventory Management System designed to streamline technical textile workflows. It facilitates the tracking of samples throughout their lifecycle—from prototype to production—while managing inventory movements, invoicing, and approvals.
 
@@ -22,10 +22,6 @@
 ### 👥 Role-Based Access
 - **Admin**: Full system control and configuration.
 - **Merchandiser**: Manage collections, buyers, and sample requests.
-- **Warehouse**: Handle physical stock, scanning, and movement operations.
-- **User**: Standard access for viewing and basic operations.
-
----
 
 ## 🔐 Credentials
 
@@ -38,4 +34,5 @@ The following pre-configured users are available for testing and development:
 ### Merchandiser
 - **Email:** `merchandiser@example.com`
 - **Password:** `123456`
+
 

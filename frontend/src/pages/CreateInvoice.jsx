@@ -18,14 +18,14 @@ export function CreateInvoice() {
     // Setup
     const [locations, setLocations] = useState([]);
     const [toLocation, setToLocation] = useState('');
-    const [sourceLocation, setSourceLocation] = useState(''); // New
-    const [recipientName, setRecipientName] = useState(''); // New
+    const [sourceLocation, setSourceLocation] = useState(''); 
+    const [recipientName, setRecipientName] = useState(''); 
     const [invoiceType, setInvoiceType] = useState('Non-returnable');
     const [remarks, setRemarks] = useState('');
     const [loading, setLoading] = useState(false);
 
     // Items
-    const [items, setItems] = useState([]); // { sampleId, name, sku, quantity, maxQty, notes }
+    const [items, setItems] = useState([]); 
 
     // Search / Scan State
     const [searchTerm, setSearchTerm] = useState('');
